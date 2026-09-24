@@ -101,3 +101,6 @@ protected function calculateTotals($data, $event)
         'final_amount' => round($finalAmount, 2),
     ];
 }
+## Screenshots
+
+You can view the application screenshots in the [public/screenshots folder](./public/screenshots).
