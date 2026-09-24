@@ -1,64 +1,233 @@
 <x-app-layout>
-    <div class="py-12 max-w-3xl mx-auto px-4">
-        <div class="bg-white p-8 rounded shadow space-y-6">
-            <div class="flex justify-between border-b pb-4">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900">Tax Invoice / Receipt</h2>
-                    <p class="text-sm text-gray-500">Registration Reference #{{ $registration->id }}</p>
+    <div class="py-12">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+
+            <div class="bg-white shadow-sm sm:rounded-lg overflow-hidden">
+
+                <!-- Header -->
+                <div class="p-6 border-b border-gray-200 flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">
+                            Tax Invoice / Receipt
+                        </h2>
+
+                        <p class="text-sm text-gray-500 mt-1">
+                            Registration ID: #{{ $registration->id }}
+                        </p>
+                    </div>
+
+                    <span
+                        class="px-3 py-1 rounded-full text-sm font-semibold uppercase
+                        @if($registration->payment_status === 'paid')
+                            bg-green-100 text-green-800
+                        @elseif($registration->payment_status === 'pending')
+                            bg-yellow-100 text-yellow-800
+                        @elseif($registration->payment_status === 'failed')
+                            bg-red-100 text-red-800
+                        @else
+                            bg-gray-100 text-gray-800
+                        @endif"
+                    >
+                        {{ $registration->payment_status }}
+                    </span>
                 </div>
-                <div>
-                    <span class="px-3 py-1 bg-green-100 text-green-800 rounded font-semibold uppercase text-sm">{{ $registration->payment_status }}</span>
+
+                <!-- Participant & Event Details -->
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Participant -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">
+                            Participant Details
+                        </h3>
+
+                        <p class="font-semibold text-gray-900">
+                            {{ $registration->participant->name }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            {{ $registration->participant->email }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            {{ $registration->participant->phone ?? 'N/A' }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            {{ $registration->participant->course_department }}
+                        </p>
+                    </div>
+
+                    <!-- Event -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-500 uppercase mb-2">
+                            Event Details
+                        </h3>
+
+                        <p class="font-semibold text-gray-900">
+                            {{ $registration->event->title }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            Date:
+                            {{ $registration->event->event_date->format('M d, Y h:i A') }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            Tickets:
+                            {{ $registration->tickets_count }}
+                        </p>
+
+                        <p class="text-gray-600">
+                            Registration Date:
+                            {{ $registration->registration_date->format('M d, Y h:i A') }}
+                        </p>
+                    </div>
                 </div>
+
+                <!-- Billing Table -->
+                <div class="px-6 pb-6 overflow-x-auto">
+
+                    <table class="w-full border-collapse">
+
+                        <thead>
+                            <tr class="border-b bg-gray-50">
+                                <th class="p-3 text-left text-sm font-semibold text-gray-700">
+                                    Description
+                                </th>
+
+                                <th class="p-3 text-right text-sm font-semibold text-gray-700">
+                                    Amount
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody class="divide-y divide-gray-200">
+
+                            <!-- Event Fee -->
+                            <tr>
+                                <td class="p-3">
+                                    Event Fee
+                                    <span class="text-sm text-gray-500">
+                                        ({{ $registration->tickets_count }} tickets ×
+                                        ₹{{ number_format($registration->event->registration_fee, 2) }})
+                                    </span>
+                                </td>
+
+                                <td class="p-3 text-right">
+                                    ₹{{ number_format(
+                                        $registration->event->registration_fee * $registration->tickets_count,
+                                        2
+                                    ) }}
+                                </td>
+                            </tr>
+
+                            <!-- Workshop Fee -->
+                            <tr>
+                                <td class="p-3">
+                                    Workshop Fee
+                                </td>
+
+                                <td class="p-3 text-right">
+                                    ₹{{ number_format(
+                                        $registration->additional_workshop
+                                            ? $registration->event->workshop_fee * $registration->tickets_count
+                                            : 0,
+                                        2
+                                    ) }}
+                                </td>
+                            </tr>
+
+                            <!-- Food Fee -->
+                            <tr>
+                                <td class="p-3">
+                                    Food Fee
+                                    @if($registration->food_preference)
+                                        <span class="text-sm text-gray-500">
+                                            ({{ $registration->food_preference }})
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td class="p-3 text-right">
+                                    ₹{{ number_format(
+                                        $registration->food_preference
+                                            ? $registration->event->food_fee * $registration->tickets_count
+                                            : 0,
+                                        2
+                                    ) }}
+                                </td>
+                            </tr>
+
+                            <!-- Subtotal -->
+                            <tr>
+                                <td class="p-3 font-semibold">
+                                    Subtotal
+                                </td>
+
+                                <td class="p-3 text-right font-semibold">
+                                    ₹{{ number_format($registration->subtotal, 2) }}
+                                </td>
+                            </tr>
+
+                            <!-- Discount -->
+                            <tr>
+                                <td class="p-3">
+                                    Discount
+                                    ({{ number_format($registration->discount_percentage, 2) }}%)
+                                </td>
+
+                                <td class="p-3 text-right text-red-600">
+                                    -₹{{ number_format($registration->discount_amount, 2) }}
+                                </td>
+                            </tr>
+
+                            <!-- Final Amount -->
+                            <tr class="bg-gray-50">
+                                <td class="p-3 text-lg font-bold">
+                                    Final Amount
+                                </td>
+
+                                <td class="p-3 text-right text-lg font-bold text-indigo-600">
+                                    ₹{{ number_format($registration->final_amount, 2) }}
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment Status -->
+                <div class="px-6 pb-6">
+                    <div class="border rounded-lg p-4 bg-gray-50">
+
+                        <div class="flex justify-between">
+                            <span class="font-semibold text-gray-700">
+                                Payment Status
+                            </span>
+
+                            <span class="font-bold uppercase">
+                                {{ $registration->payment_status }}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="px-6 pb-6 flex justify-end gap-3">
+
+                    <button
+                        onclick="window.print()"
+                        class="bg-indigo-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-indigo-700"
+                    >
+                        Print Invoice
+                    </button>
+
+                </div>
+
             </div>
 
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                    <h3 class="font-bold text-gray-700">Participant Details:</h3>
-                    <p>{{ $registration->participant->name }}</p>
-                    <p>{{ $registration->participant->email }}</p>
-                    <p>{{ $registration->participant->phone }}</p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-700">Event Details:</h3>
-                    <p>{{ $registration->event->title }}</p>
-                    <p>Date: {{ \Carbon\Carbon::parse($registration->event->event_date)->format('M d, Y') }}</p>
-                </div>
-            </div>
-
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b bg-gray-50 text-xs text-gray-500 uppercase">
-                        <th class="p-2">Description</th>
-                        <th class="p-2 text-right">Amount</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm divide-y">
-                    <tr>
-                        <td class="p-2">Event Tickets ({{ $registration->ticket_count }}x)</td>
-                        <td class="p-2 text-right">₹{{ $registration->ticket_count * $registration->event->registration_fee }}</td>
-                    </tr>
-                    @if($registration->workshop_included)
-                    <tr>
-                        <td class="p-2">Workshop Fee</td>
-                        <td class="p-2 text-right">₹50.00</td>
-                    </tr>
-                    @endif
-                    @if($registration->food_included)
-                    <tr>
-                        <td class="p-2">Food Package</td>
-                        <td class="p-2 text-right">₹30.00</td>
-                    </tr>
-                    @endif
-                    <tr class="font-bold bg-gray-50">
-                        <td class="p-2">Final Payable Amount</td>
-                        <td class="p-2 text-right text-indigo-600">₹{{ $registration->final_amount }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="flex justify-end gap-4 pt-4">
-                <button onclick="window.print()" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Print Invoice</button>
-            </div>
         </div>
     </div>
 </x-app-layout>

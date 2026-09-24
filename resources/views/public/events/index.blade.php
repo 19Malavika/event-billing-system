@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-public-layout>
     <div class="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Page Header -->
@@ -201,4 +201,4 @@
         </div>
 
     </div>
-</x-app-layout>
+</x-public-layout>

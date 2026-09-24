@@ -19,9 +19,11 @@ class ParticipantController extends Controller
                   ->orWhere('course_department', 'like', "%{$search}%");
             });
         }
-
-        $participants = $query->latest()->paginate(10)->withQueryString();
-
+$participants = $query
+    ->withCount('registrations')
+    ->latest()
+    ->paginate(10)
+    ->withQueryString(); 
         return view('admin.participants.index', compact('participants'));
     }
 

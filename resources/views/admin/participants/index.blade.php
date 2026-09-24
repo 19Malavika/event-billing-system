@@ -26,6 +26,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course / Dept</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+    Total Events
+</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
@@ -35,7 +38,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $participant->name }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $participant->email }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $participant->phone ?? 'N/A' }}</td>
+
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $participant->course_department }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+    {{ $participant->registrations_count }}
+</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                         <a href="{{ route('participants.show', $participant) }}" class="text-indigo-600 hover:text-indigo-900">View</a>
                                         <a href="{{ route('participants.edit', $participant) }}" class="text-yellow-600 hover:text-yellow-900">Edit</a>
@@ -48,7 +55,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No participants found.</td>
+                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No participants found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

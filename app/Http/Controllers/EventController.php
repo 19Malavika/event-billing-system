@@ -28,10 +28,11 @@ class EventController extends Controller
             $query->whereDate('event_date', $request->input('date'));
         }
 
-        $events = $query
-            ->latest('event_date')
-            ->paginate(10)
-            ->withQueryString();
+       $events = $query
+    ->withSum('registrations', 'tickets_count')
+    ->latest('event_date')
+    ->paginate(10)
+    ->withQueryString();
 
         return view('admin.events.index', compact('events'));
     }

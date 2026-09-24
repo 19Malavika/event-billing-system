@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-public-layout>
 
     <div class="py-12">
         <div class="max-w-5xl mx-auto px-4">
@@ -127,4 +127,4 @@
         </div>
     </div>
 
-</x-app-layout>
+</x-public-layout>

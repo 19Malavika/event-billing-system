@@ -30,13 +30,12 @@ Route::get('/', function () {
 // ==========================================
 // Events Listing (Public)
 // ==========================================
-
 Route::get('/events', function (\Illuminate\Http\Request $request) {
 
     $query = Event::where('status', 'published');
 
+    // Search by event title
     if ($request->filled('search')) {
-
         $query->where(
             'title',
             'like',
@@ -44,18 +43,25 @@ Route::get('/events', function (\Illuminate\Http\Request $request) {
         );
     }
 
-    $events = $query
-        ->latest()
-        ->paginate(9);
+    // Filter by event date
+    if ($request->filled('date')) {
+        $query->whereDate(
+            'event_date',
+            $request->input('date')
+        );
+    }
 
-    // Public events listing page
+    $events = $query
+        ->orderBy('event_date', 'asc')
+        ->paginate(9)
+        ->withQueryString();
+
     return view(
         'public.events.index',
         compact('events')
     );
 
 })->name('public.events.index');
-
 
 // ==========================================
 // Event Details (Public)
@@ -93,7 +99,7 @@ Route::get('/registrations/{registration}/ticket', function (App\Models\Registra
 
 Route::post(
     '/events/{event}/register',
-    [RegistrationController::class, 'store']
+    [RegistrationController::class, 'storePublic']
 )->name('events.register.store');
 
 
@@ -167,17 +173,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->latest()
             ->take(5)
             ->get();
+        // Registration Summary
+$registrationSummary = [
+    'paid' => Registration::where('payment_status', 'paid')->count(),
+    'pending' => Registration::where('payment_status', 'pending')->count(),
+    'failed' => Registration::where('payment_status', 'failed')->count(),
+    'refunded' => Registration::where('payment_status', 'refunded')->count(),
+];
 
-        return view('dashboard', compact(
-            'totalEvents',
-            'upcomingEventsCount',
-            'totalParticipants',
-            'totalRegistrations',
-            'totalRevenue',
-            'availableSeats',
-            'upcomingEvents',
-            'recentRegistrations'
-        ));
+// Revenue Summary
+$revenueSummary = [
+    'paid' => Registration::where('payment_status', 'paid')->sum('final_amount'),
+    'pending' => Registration::where('payment_status', 'pending')->sum('final_amount'),
+    'refunded' => Registration::where('payment_status', 'refunded')->sum('final_amount'),
+];
+return view('dashboard', compact(
+    'totalEvents',
+    'upcomingEventsCount',
+    'totalParticipants',
+    'totalRegistrations',
+    'totalRevenue',
+    'availableSeats',
+    'upcomingEvents',
+    'recentRegistrations',
+    'registrationSummary',
+    'revenueSummary'
+));
 
     })->name('dashboard');
 
@@ -186,42 +207,88 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Revenue / Billing Report
     // --------------------------------------
 
-    Route::get('/reports/revenue', function () {
+   Route::get('/reports/revenue', function (\Illuminate\Http\Request $request) {
 
-        $totalRevenue = Registration::where(
-            'payment_status',
-            'paid'
-        )->sum('final_amount');
+    $query = Registration::with([
+        'event',
+        'participant'
+    ]);
 
-        $paidCount = Registration::where(
-            'payment_status',
-            'paid'
-        )->count();
-
-        $pendingCount = Registration::where(
-            'payment_status',
-            'pending'
-        )->count();
-
-        $totalDiscounts = Registration::sum(
-            'discount_amount'
+    // Search/filter by date range
+    if ($request->filled('from_date')) {
+        $query->whereDate(
+            'registration_date',
+            '>=',
+            $request->input('from_date')
         );
+    }
 
-        $registrations = Registration::latest()
-            ->paginate(10);
-
-        return view(
-            'reports.revenue',
-            compact(
-                'totalRevenue',
-                'paidCount',
-                'pendingCount',
-                'totalDiscounts',
-                'registrations'
-            )
+    if ($request->filled('to_date')) {
+        $query->whereDate(
+            'registration_date',
+            '<=',
+            $request->input('to_date')
         );
+    }
 
-    })->name('reports.revenue');
+    // Filter by event
+    if ($request->filled('event_id')) {
+        $query->where(
+            'event_id',
+            $request->input('event_id')
+        );
+    }
+
+    // Filter by payment status
+    if ($request->filled('payment_status')) {
+        $query->where(
+            'payment_status',
+            $request->input('payment_status')
+        );
+    }
+
+    // Clone query before pagination for report statistics
+    $statsQuery = clone $query;
+
+    $totalRevenue = (clone $statsQuery)
+        ->where('payment_status', 'paid')
+        ->sum('final_amount');
+
+    $totalRegistrations = (clone $statsQuery)
+        ->count();
+
+    $paidCount = (clone $statsQuery)
+        ->where('payment_status', 'paid')
+        ->count();
+
+    $pendingCount = (clone $statsQuery)
+        ->where('payment_status', 'pending')
+        ->count();
+
+    $totalDiscounts = (clone $statsQuery)
+        ->sum('discount_amount');
+
+    $registrations = $query
+        ->latest('registration_date')
+        ->paginate(10)
+        ->withQueryString();
+
+    $events = Event::orderBy('title')->get();
+
+    return view(
+        'reports.revenue',
+        compact(
+            'totalRevenue',
+            'totalRegistrations',
+            'paidCount',
+            'pendingCount',
+            'totalDiscounts',
+            'registrations',
+            'events'
+        )
+    );
+
+})->name('reports.revenue');
 
 
     // --------------------------------------
