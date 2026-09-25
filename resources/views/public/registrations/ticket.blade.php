@@ -75,17 +75,24 @@
 
                     </div>
 
-                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                   <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
 
-                        <p class="text-sm text-gray-500">
-                            Unique Ticket Code
-                        </p>
+    <!-- Scannable QR Code -->
+    <div class="mb-4 flex justify-center">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data={{ $registration->ticket_code }}" 
+             alt="Ticket QR Code" 
+             class="w-32 h-32 object-contain bg-white p-2 rounded shadow-sm">
+    </div>
 
-                        <p class="mt-2 text-2xl font-mono font-bold tracking-widest">
-                            {{ $registration->ticket_code }}
-                        </p>
+    <p class="text-sm text-gray-500">
+        Unique Ticket Code
+    </p>
 
-                    </div>
+    <p class="mt-2 text-2xl font-mono font-bold tracking-widest">
+        {{ $registration->ticket_code }}
+    </p>
+
+</div>
 
                     <div class="bg-gray-50 rounded-lg p-5 flex justify-between">
 

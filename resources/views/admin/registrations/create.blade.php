@@ -316,114 +316,55 @@
     <script>
         function registrationForm() {
             return {
-
                 selectedEventId: '',
-
                 eventFee: 0,
-
                 workshopFee: 0,
-
                 foodFee: 0,
-
                 tickets: 1,
-
                 hasWorkshop: false,
-
                 foodPreference: '',
 
-
                 updateEventFee(event) {
-
-                    let selectedOption =
-                        event.target.options[event.target.selectedIndex];
-
-                    this.eventFee =
-                        parseFloat(
-                            selectedOption.getAttribute('data-fee')
-                        ) || 0;
-
-                    this.workshopFee =
-                        parseFloat(
-                            selectedOption.getAttribute('data-workshop-fee')
-                        ) || 0;
-
-                    this.foodFee =
-                        parseFloat(
-                            selectedOption.getAttribute('data-food-fee')
-                        ) || 0;
+                    let selectedOption = event.target.options[event.target.selectedIndex];
+                    
+                    this.eventFee = parseFloat(selectedOption.getAttribute('data-fee')) || 0;
+                    this.workshopFee = parseFloat(selectedOption.getAttribute('data-workshop-fee')) || 0;
+                    this.foodFee = parseFloat(selectedOption.getAttribute('data-food-fee')) || 0;
                 },
-
 
                 get eventFeeTotal() {
-
                     return this.eventFee * this.tickets;
-
                 },
-
 
                 get workshopTotal() {
-
-                    return this.hasWorkshop
-                        ? this.workshopFee * this.tickets
-                        : 0;
-
+                    return this.hasWorkshop ? (this.workshopFee * this.tickets) : 0;
                 },
-
 
                 get foodTotal() {
-
-                    return this.foodPreference
-                        ? this.foodFee * this.tickets
-                        : 0;
-
+                    return (this.foodPreference && this.foodPreference !== '') ? (this.foodFee * this.tickets) : 0;
                 },
-
 
                 get subtotal() {
-
-                    return (
-                        this.eventFeeTotal +
-                        this.workshopTotal +
-                        this.foodTotal
-                    );
-
+                    return this.eventFeeTotal + this.workshopTotal + this.foodTotal;
                 },
 
-
                 get discountPercentage() {
-
                     if (this.tickets >= 5) {
                         return 10;
                     }
-
                     if (this.tickets >= 3) {
                         return 5;
                     }
-
                     return 0;
-
                 },
-
 
                 get discountAmount() {
-
-                    return (
-                        this.subtotal *
-                        this.discountPercentage
-                    ) / 100;
-
+                    return (this.subtotal * this.discountPercentage) / 100;
                 },
 
-
                 get finalAmount() {
-
-                    return (
-                        this.subtotal -
-                        this.discountAmount
-                    );
-
+                    return this.subtotal - this.discountAmount;
                 }
-
             }
         }
     </script>
