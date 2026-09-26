@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
 
     $upcomingEvents = Event::where('status', 'published')
-        ->where('event_date', '>', now())
+        ->where('event_date', '>=', now())
         ->orderBy('event_date', 'asc')
         ->take(3)
         ->get();

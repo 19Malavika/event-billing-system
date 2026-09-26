@@ -5,6 +5,53 @@
             {{ __('Admin Dashboard') }}
         </h2>
     </x-slot>
+   <!-- Cinematic Dashboard Hero Banner with admin.jpeg -->
+<div class="relative overflow-hidden rounded-3xl bg-slate-950 p-8 md:p-12 shadow-2xl mb-8 border border-slate-800 isolate">
+    
+    <!-- 👉 INTEGRATED BACKGROUND IMAGE (admin.jpeg) -->
+    <div class="absolute inset-0 z-0 opacity-15">
+        <img src="{{ asset('images/admin.jpeg') }}" 
+             alt="Admin Background" 
+             class="w-full h-full object-cover object-center scale-105 transform">
+        <!-- A subtle gradient fade overlay to blend it perfectly -->
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-transparent"></div>
+    </div>
+
+    <!-- Ambient Background Glow Effects (Layered above the image for depth) -->
+    <div class="absolute -top-24 -right-24 w-96 h-96 bg-rose-600/10 rounded-full blur-3xl pointer-events-none z-1"></div>
+    <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none z-1"></div>
+
+    <!-- Banner Content (Layered on top of everything) -->
+    <div class="relative z-20 max-w-2xl">
+        <!-- Badge -->
+        <div class="inline-flex items-center space-x-2 bg-slate-900/70 border border-slate-700/50 px-3 py-1 rounded-full text-xs font-semibold text-rose-400 mb-6 backdrop-blur-md">
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+            <span>Admin Control Center</span>
+        </div>
+
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3">
+    Manage events with <span style="color: #2874B8;">total precision.</span>
+</h1>
+
+<p class="text-gray-300 text-sm sm:text-base mb-6 leading-relaxed">
+    Oversee upcoming workshops, track seat registrations, and coordinate technical events seamlessly from your command center.
+</p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap items-center gap-4">
+            <a href="{{ route('events.create') }}" 
+               class="px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl transition duration-300 shadow-lg shadow-rose-900/40 flex items-center space-x-2 z-10">
+                <span>+ Create New Event</span>
+            </a>
+            
+            <a href="#events-list" 
+               class="px-6 py-3 bg-slate-900/70 hover:bg-slate-800/80 text-slate-200 border border-slate-700/60 backdrop-blur-sm text-xs font-bold rounded-xl transition duration-300 z-10">
+                View Active Events
+            </a>
+        </div>
+    </div>
+
+</div>
 
     <div class="py-12">
 

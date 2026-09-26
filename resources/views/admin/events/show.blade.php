@@ -176,15 +176,15 @@
 
                 <div class="flex justify-between items-center mb-5">
 
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-900">
-                            Event Registrations
-                        </h3>
+                    <<div>
+    <h3 class="text-lg font-bold text-gray-900">
+        Event Registrations
+    </h3>
 
-                        <p class="text-sm text-gray-500">
-                            {{ $registeredCount }} registration(s)
-                        </p>
-                    </div>
+    <p class="text-sm text-gray-500">
+        {{ $registeredTickets }} registration(s)
+    </p>
+</div>
 
                 </div>
 

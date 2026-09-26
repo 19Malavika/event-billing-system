@@ -78,6 +78,7 @@
                                 type="number"
                                 name="total_seats"
                                 min="1"
+                                step="1"
                                 value="{{ old('total_seats', 100) }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                                 required

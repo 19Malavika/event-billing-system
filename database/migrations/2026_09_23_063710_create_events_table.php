@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('available_seats');
             $table->decimal('registration_fee', 10, 2)->default(0.00);
             $table->enum('status', ['draft', 'published', 'completed', 'cancelled'])->default('draft');
+            $table->string('image')->nullable(); //
             $table->timestamps();
         });
     }

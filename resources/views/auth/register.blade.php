@@ -49,23 +49,28 @@
                     </div>
 
                     <!-- Options -->
-                    <div class="border-t pt-4 space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Number of Tickets</label>
-                            <input type="number" name="ticket_count" x-model.number="ticketCount" min="1" max="10" class="mt-1 block w-32 rounded-md border-gray-300 shadow-sm">
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <label class="flex items-center">
-                                <input type="checkbox" name="workshop_included" x-model="workshopIncluded" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                                <span class="ml-2 text-sm text-gray-700">Include Workshop (+₹50.00)</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="food_included" x-model="foodIncluded" class="rounded border-gray-300 text-indigo-600 shadow-sm">
-                                <span class="ml-2 text-sm text-gray-700">Include Food Package (+₹30.00)</span>
-                            </label>
-                        </div>
-                    </div>
-
+                 <div class="border-t pt-4 space-y-4">
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Number of Tickets</label>
+        <input type="number" 
+               name="ticket_count" 
+               x-model.number="ticketCount" 
+               min="1" 
+               max="10" 
+               step="1"
+               class="mt-1 block w-32 rounded-md border-gray-300 shadow-sm">
+    </div>
+    <div class="flex items-center space-x-4">
+        <label class="flex items-center">
+            <input type="checkbox" name="workshop_included" x-model="workshopIncluded" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+            <span class="ml-2 text-sm text-gray-700">Include Workshop (+₹50.00)</span>
+        </label>
+        <label class="flex items-center">
+            <input type="checkbox" name="food_included" x-model="foodIncluded" class="rounded border-gray-300 text-indigo-600 shadow-sm">
+            <span class="ml-2 text-sm text-gray-700">Include Food Package (+₹30.00)</span>
+        </label>
+    </div>
+</div>   
                     <!-- Dynamic Billing Summary Box -->
                     <div class="bg-gray-50 p-4 rounded-lg space-y-2 border">
                         <h3 class="font-semibold text-gray-800">Billing Summary</h3>

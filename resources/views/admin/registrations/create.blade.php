@@ -1,314 +1,257 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-bold text-2xl text-gray-900 tracking-tight leading-tight">
             {{ __('New Event Registration & Billing') }}
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="registrationForm()">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-12 bg-gray-50 min-h-screen" x-data="registrationForm()">
+        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+            {{-- Validation Errors --}}
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-6 py-4 rounded-2xl shadow-sm relative">
+                    <strong class="font-extrabold block mb-1">
+                        Please fix the following errors:
+                    </strong>
+                    <ul class="list-disc list-inside text-sm space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-                {{-- Validation Errors --}}
-                @if ($errors->any())
-                    <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-                        <strong class="font-bold">
-                            Please fix the following errors:
-                        </strong>
+            <form
+                action="{{ route('registrations.store') }}"
+                method="POST"
+                class="grid grid-cols-1 lg:grid-cols-3 gap-8"
+            >
+                @csrf
 
-                        <ul class="mt-2 list-disc list-inside text-sm">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
-
-                <form
-                    action="{{ route('registrations.store') }}"
-                    method="POST"
-                    class="space-y-6"
-                >
-                    @csrf
-
-                    {{-- Event Selection --}}
-                    <div>
-                        <label
-                            for="event_id"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Select Event
-                        </label>
-
-                        <select
-                            name="event_id"
-                            id="event_id"
-                            x-model="selectedEventId"
-                            @change="updateEventFee"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        >
-                            <option value="">
-                                -- Choose Published Event --
-                            </option>
-
-                            @foreach($events as $event)
-                                <option
-                                    value="{{ $event->id }}"
-                                    data-fee="{{ $event->registration_fee }}"
-                                    data-workshop-fee="{{ $event->workshop_fee }}"
-                                    data-food-fee="{{ $event->food_fee }}"
-                                    data-seats="{{ $event->available_seats }}"
-                                >
-                                    {{ $event->title }}
-                                    (Fee: ₹{{ number_format($event->registration_fee, 2) }}
-                                    | Seats Left: {{ $event->available_seats }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Participant Selection --}}
-                    <div>
-                        <label
-                            for="participant_id"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Select Participant
-                        </label>
-
-                        <select
-                            name="participant_id"
-                            id="participant_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        >
-                            <option value="">
-                                -- Choose Participant --
-                            </option>
-
-                            @foreach($participants as $participant)
-                                <option value="{{ $participant->id }}">
-                                    {{ $participant->name }}
-                                    ({{ $participant->email }})
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Tickets Count --}}
-                    <div>
-                        <label
-                            for="tickets_count"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Number of Tickets
-                        </label>
-
-                        <input
-                            type="number"
-                            name="tickets_count"
-                            id="tickets_count"
-                            x-model.number="tickets"
-                            min="1"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        >
-
-                        <p class="text-xs text-gray-500 mt-1">
-                            Volume Discount:
-                            3-4 tickets = 5% off,
-                            5+ tickets = 10% off
-                        </p>
-                    </div>
-
-                    {{-- Registration Date --}}
-                    <div>
-                        <label
-                            for="registration_date"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Registration Date
-                        </label>
-
-                        <input
-                            type="datetime-local"
-                            name="registration_date"
-                            id="registration_date"
-                            value="{{ old('registration_date', now()->format('Y-m-d\TH:i')) }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        >
-                    </div>
-
-                    {{-- Additional Options --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                        {{-- Workshop --}}
-                        <div class="flex items-center space-x-3 border p-4 rounded-md">
-
-                            <input
-                                type="hidden"
-                                name="additional_workshop"
-                                value="0"
-                            >
-
-                            <input
-                                type="checkbox"
-                                name="additional_workshop"
-                                id="additional_workshop"
-                                value="1"
-                                x-model="hasWorkshop"
-                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                            >
-
-                            <label
-                                for="additional_workshop"
-                                class="text-sm font-medium text-gray-700"
-                            >
-                                Include Additional Workshop
-                                (<span x-text="'₹' + workshopFee.toFixed(2)"></span>/ticket)
-                            </label>
-
-                        </div>
-
-                        {{-- Food --}}
-                        <div>
-                            <label
-                                for="food_preference"
-                                class="block text-sm font-medium text-gray-700"
-                            >
-                                Food Preference
-                            </label>
-
-                            <select
-                                name="food_preference"
-                                id="food_preference"
-                                x-model="foodPreference"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            >
-                                <option value="">None</option>
-
-                                <option value="Vegetarian">
-                                    Vegetarian
-                                    (+<span x-text="'₹' + foodFee.toFixed(2)"></span>/ticket)
-                                </option>
-
-                                <option value="Non-Vegetarian">
-                                    Non-Vegetarian
-                                    (+<span x-text="'₹' + foodFee.toFixed(2)"></span>/ticket)
-                                </option>
-
-                                <option value="Vegan">
-                                    Vegan
-                                    (+<span x-text="'₹' + foodFee.toFixed(2)"></span>/ticket)
-                                </option>
-                            </select>
-                        </div>
-
-                    </div>
-
-                    {{-- Payment Status --}}
-                    <div>
-                        <label
-                            for="payment_status"
-                            class="block text-sm font-medium text-gray-700"
-                        >
-                            Payment Status
-                        </label>
-
-                        <select
-                            name="payment_status"
-                            id="payment_status"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            required
-                        >
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
-                        </select>
-                    </div>
-
-                    {{-- Billing Summary --}}
-                    <div class="bg-gray-50 border border-gray-200 p-4 rounded-lg space-y-3">
-
-                        <h3 class="font-semibold text-gray-800 border-b pb-2">
-                            Billing Breakdown Summary
+                {{-- Left Side: Form Inputs (2 Columns wide) --}}
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white shadow-xl rounded-3xl p-8 border border-gray-100">
+                        
+                        <h3 class="text-lg font-extrabold text-gray-900 mb-6 pb-3 border-b border-gray-100">
+                            Participant & Event Details
                         </h3>
 
-                        {{-- Event Fee --}}
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>Event Fee:</span>
+                        <div class="space-y-5">
+                            {{-- Event Selection --}}
+                            <div>
+                                <label for="event_id" class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                    Select Event
+                                </label>
+                                <select
+                                    name="event_id"
+                                    id="event_id"
+                                    x-model="selectedEventId"
+                                    @change="updateEventFee"
+                                    class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-3"
+                                    required
+                                >
+                                    <option value="">-- Choose Published Event --</option>
+                                    @foreach($events as $event)
+                                        <option
+                                            value="{{ $event->id }}"
+                                            data-fee="{{ $event->registration_fee }}"
+                                            data-workshop-fee="{{ $event->workshop_fee }}"
+                                            data-food-fee="{{ $event->food_fee }}"
+                                            data-seats="{{ $event->available_seats }}"
+                                        >
+                                            {{ $event->title }} (Fee: ₹{{ number_format($event->registration_fee, 2) }} | Seats Left: {{ $event->available_seats }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
 
-                            <span x-text="'₹' + eventFeeTotal.toFixed(2)"></span>
+                            {{-- Participant Selection --}}
+                            <div>
+                                <label for="participant_id" class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                    Select Participant
+                                </label>
+                                <select
+                                    name="participant_id"
+                                    id="participant_id"
+                                    class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-3"
+                                    required
+                                >
+                                    <option value="">-- Choose Participant --</option>
+                                    @foreach($participants as $participant)
+                                        <option value="{{ $participant->id }}">
+                                            {{ $participant->name }} ({{ $participant->email }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                {{-- Tickets Count --}}
+                                <div>
+                                    <label for="tickets_count" class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                        Number of Tickets
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="tickets_count"
+                                        id="tickets_count"
+                                        x-model.number="tickets"
+                                        min="1"
+                                        step="1"
+                                        class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-3"
+                                        required
+                                    >
+                                    <p class="text-[11px] text-gray-400 mt-1.5 font-medium">
+                                        Discount: 3-4 tickets = 5% off, 5+ = 10% off
+                                    </p>
+                                </div>
+
+                                {{-- Registration Date --}}
+                                <div>
+                                    <label for="registration_date" class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                        Registration Date
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        name="registration_date"
+                                        id="registration_date"
+                                        value="{{ old('registration_date', now()->format('Y-m-d\TH:i')) }}"
+                                        class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-3"
+                                        required
+                                    >
+                                </div>
+                            </div>
+
+                            {{-- Additional Options Section --}}
+                            <div class="pt-4 border-t border-gray-100 space-y-4">
+                                <h4 class="text-xs font-extrabold uppercase tracking-widest text-gray-400">Add-ons & Payment</h4>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {{-- Workshop Toggle --}}
+                                    <div class="flex items-center space-x-3 border border-gray-200 p-4 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition">
+                                        <input type="hidden" name="additional_workshop" value="0">
+                                        <input
+                                            type="checkbox"
+                                            name="additional_workshop"
+                                            id="additional_workshop"
+                                            value="1"
+                                            x-model="hasWorkshop"
+                                            class="rounded border-gray-300 text-[#2874B8] shadow-sm focus:ring-[#2874B8] w-5 h-5"
+                                        >
+                                        <label for="additional_workshop" class="text-xs font-bold text-gray-700 cursor-pointer">
+                                            Include Workshop 
+                                            <span class="block text-[10px] text-gray-400 font-normal" x-text="'+₹' + workshopFee.toFixed(2) + '/ticket'"></span>
+                                        </label>
+                                    </div>
+
+                                    {{-- Food Preference --}}
+                                    <div>
+                                        <label for="food_preference" class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                            Food Package
+                                        </label>
+                                        <select
+                                            name="food_preference"
+                                            id="food_preference"
+                                            x-model="foodPreference"
+                                            class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-2.5"
+                                        >
+                                            <option value="">None</option>
+                                            <option value="Vegetarian">Vegetarian</option>
+                                            <option value="Non-Vegetarian">Non-Vegetarian</option>
+                                            <option value="Vegan">Vegan</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Payment Status --}}
+                                <div>
+                                    <label for="payment_status" class="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                        Payment Status
+                                    </label>
+                                    <select
+                                        name="payment_status"
+                                        id="payment_status"
+                                        class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#2874B8] focus:ring-[#2874B8] text-sm py-3"
+                                        required
+                                    >
+                                        <option value="pending">Pending</option>
+                                        <option value="paid">Paid</option>
+                                        <option value="failed">Failed</option>
+                                        <option value="refunded">Refunded</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right Side: Sticky Billing Summary Card (1 Column wide) --}}
+                <div class="lg:col-span-1">
+                    <div class="bg-white shadow-xl rounded-3xl p-6 border border-gray-100 sticky top-6 space-y-5">
+                        
+                        <div class="bg-gray-900 text-white -mx-6 -mt-6 p-6 rounded-t-3xl">
+                            <h3 class="font-extrabold text-base tracking-wide">
+                                Billing Summary
+                            </h3>
+                            <p class="text-xs text-gray-400 mt-0.5">Real-time calculations</p>
                         </div>
 
-                        {{-- Workshop Fee --}}
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>Workshop Fee:</span>
+                        <div class="space-y-3 text-sm text-gray-600 pt-2">
+                            <div class="flex justify-between">
+                                <span>Event Fee:</span>
+                                <span class="font-bold text-gray-900" x-text="'₹' + eventFeeTotal.toFixed(2)"></span>
+                            </div>
 
-                            <span x-text="'₹' + workshopTotal.toFixed(2)"></span>
+                            <div class="flex justify-between" x-show="hasWorkshop">
+                                <span>Workshop Fee:</span>
+                                <span class="font-bold text-gray-900" x-text="'₹' + workshopTotal.toFixed(2)"></span>
+                            </div>
+
+                            <div class="flex justify-between" x-show="foodPreference">
+                                <span>Food Package:</span>
+                                <span class="font-bold text-gray-900" x-text="'₹' + foodTotal.toFixed(2)"></span>
+                            </div>
+
+                            <div class="border-t border-gray-100 pt-3 flex justify-between font-medium text-gray-800">
+                                <span>Subtotal:</span>
+                                <span x-text="'₹' + subtotal.toFixed(2)"></span>
+                            </div>
+
+                            <div class="flex justify-between text-emerald-600 text-xs font-bold" x-show="discountPercentage > 0">
+                                <span>Discount (<span x-text="discountPercentage + '%'"></span>):</span>
+                                <span x-text="'- ₹' + discountAmount.toFixed(2)"></span>
+                            </div>
                         </div>
 
-                        {{-- Food Fee --}}
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>Food Fee:</span>
-
-                            <span x-text="'₹' + foodTotal.toFixed(2)"></span>
+                        <div class="border-t border-dashed border-gray-200 pt-4 flex justify-between items-center">
+                            <span class="font-extrabold text-gray-900 text-base">Final Amount</span>
+                            <span class="font-black text-indigo-600 text-2xl" x-text="'₹' + finalAmount.toFixed(2)"></span>
                         </div>
 
-                        {{-- Subtotal --}}
-                        <div class="flex justify-between text-sm font-medium text-gray-700 border-t pt-2">
-                            <span>Subtotal:</span>
+                        {{-- Action Buttons --}}
+                        <div class="space-y-3 pt-2">
+                            <button
+                                type="submit"
+                                class="w-full bg-[#2874B8] hover:bg-[#215d96] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-blue-500/20 transition text-sm text-center"
+                            >
+                                Complete Registration
+                            </button>
 
-                            <span x-text="'₹' + subtotal.toFixed(2)"></span>
-                        </div>
-
-                        {{-- Discount Percentage --}}
-                        <div class="flex justify-between text-sm text-gray-600">
-                            <span>
-                                Discount:
-                                <span x-text="discountPercentage + '%'"></span>
-                            </span>
-
-                            <span>
-                                - ₹<span x-text="discountAmount.toFixed(2)"></span>
-                            </span>
-                        </div>
-
-                        {{-- Final Amount --}}
-                        <div class="flex justify-between text-base font-bold text-gray-900 border-t pt-2">
-                            <span>Final Amount:</span>
-
-                            <span x-text="'₹' + finalAmount.toFixed(2)"></span>
+                            <a
+                                href="{{ route('registrations.index') }}"
+                                class="w-full block text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-xl transition text-sm"
+                            >
+                                Cancel
+                            </a>
                         </div>
 
                     </div>
+                </div>
 
-                    {{-- Submit Buttons --}}
-                    <div class="flex justify-end space-x-3">
+            </form>
 
-                        <a
-                            href="{{ route('registrations.index') }}"
-                            class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-300"
-                        >
-                            Cancel
-                        </a>
-
-                        <button
-                            type="submit"
-                            class="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700"
-                        >
-                            Complete Registration
-                        </button>
-
-                    </div>
-
-                </form>
-
-            </div>
         </div>
     </div>
 
@@ -326,7 +269,6 @@
 
                 updateEventFee(event) {
                     let selectedOption = event.target.options[event.target.selectedIndex];
-                    
                     this.eventFee = parseFloat(selectedOption.getAttribute('data-fee')) || 0;
                     this.workshopFee = parseFloat(selectedOption.getAttribute('data-workshop-fee')) || 0;
                     this.foodFee = parseFloat(selectedOption.getAttribute('data-food-fee')) || 0;
@@ -349,12 +291,8 @@
                 },
 
                 get discountPercentage() {
-                    if (this.tickets >= 5) {
-                        return 10;
-                    }
-                    if (this.tickets >= 3) {
-                        return 5;
-                    }
+                    if (this.tickets >= 5) return 10;
+                    if (this.tickets >= 3) return 5;
                     return 0;
                 },
 
@@ -368,5 +306,4 @@
             }
         }
     </script>
-
 </x-app-layout>

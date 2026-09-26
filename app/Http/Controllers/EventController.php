@@ -41,52 +41,20 @@ class EventController extends Controller
     {
         return view('admin.events.create');
     }
+public function store(Request $request)
+{
+    $data = $request->all();
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'event_date' => 'required|date',
-            'registration_start_date' => 'required|date',
-            'registration_end_date' => 'required|date|after_or_equal:registration_start_date',
-            'total_seats' => 'required|integer|min:1',
-            'registration_fee' => 'required|numeric|min:0',
-            'workshop_fee' => 'required|numeric|min:0',
-            'food_fee' => 'required|numeric|min:0',
-            'status' => 'required|in:draft,published,completed,cancelled',
-        ]);
+    // Automatically supply defaults for hidden or missing required database fields
+    $data['total_seats'] = $request->input('total_seats', 100);
+    $data['available_seats'] = $request->input('total_seats', 100);
+    $data['registration_start_date'] = $request->input('registration_start_date', now());
+    $data['registration_end_date'] = $request->input('registration_end_date', now()->addDays(30));
 
-        $validated['available_seats'] = $validated['total_seats'];
+    \App\Models\Event::create($data);
 
-        Event::create($validated);
-
-        return redirect()
-            ->route('events.index')
-            ->with('success', 'Event created successfully.');
-    }
-
-    public function show(Event $event)
-    {
-        $event->load([
-            'registrations.participant',
-        ]);
-
-        $registeredTickets = $event->registrations->sum('tickets_count');
-
-        $registeredCount = $event->registrations->count();
-
-        $revenue = $event->registrations
-            ->where('payment_status', 'paid')
-            ->sum('final_amount');
-
-        return view('admin.events.show', compact(
-            'event',
-            'registeredTickets',
-            'registeredCount',
-            'revenue'
-        ));
-    }
+    return redirect()->route('events.index')->with('success', 'Event created successfully!');
+}
 
     public function edit(Event $event)
     {
@@ -136,4 +104,16 @@ class EventController extends Controller
             ->route('events.index')
             ->with('success', 'Event deleted successfully.');
     }
+public function show(Event $event)
+{
+    $registeredTickets = $event->total_seats - $event->available_seats;
+
+    $revenue = $registeredTickets * $event->registration_fee;
+
+    return view('admin.events.show', compact(
+        'event',
+        'registeredTickets',
+        'revenue'
+    ));
+}
 }

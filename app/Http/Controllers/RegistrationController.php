@@ -135,6 +135,7 @@ class RegistrationController extends Controller
      */
     public function storePublic(Request $request, Event $event)
     {
+        $now = now();
         // Validate public registration fields
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -149,18 +150,8 @@ class RegistrationController extends Controller
         ]);
 
         // Make sure the event is available for registration
-        $now = now();
-
-        if ($event->status !== 'published') {
-            return back()
-                ->withErrors([
-                    'event' => 'This event is not available for registration.',
-                ])
-                ->withInput();
-        }
-
-        if (
-            $now->lt($event->registration_start_date) ||
+       if (
+            $now->toDateString() < $event->registration_start_date->toDateString() ||
             $now->gt($event->registration_end_date)
         ) {
             return back()
@@ -168,18 +159,7 @@ class RegistrationController extends Controller
                     'event' => 'The registration period for this event is closed.',
                 ])
                 ->withInput();
-        }
-
-        // Check available seats
-        if ($event->available_seats < $validated['tickets_count']) {
-            return back()
-                ->withErrors([
-                    'tickets_count' =>
-                        'Requested tickets exceed available seats.',
-                ])
-                ->withInput();
-        }
-
+        } 
         // Find existing participant or create a new one
         $participant = Participant::firstOrCreate(
             [
